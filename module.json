@@ -1,0 +1,16 @@
+{
+    "name": "BankTransferPayment",
+    "alias": "banktransferpayment",
+    "description": "Bank transfer payment method with configurable bank account details",
+    "keywords": ["payment", "bank transfer", "wire transfer"],
+    "priority": 0,
+    "providers": [
+        "Modules\\BankTransferPayment\\Providers\\BankTransferPaymentServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": [],
+    "type": "payment",
+    "version": "1.0.0",
+    "is_core": false
+}

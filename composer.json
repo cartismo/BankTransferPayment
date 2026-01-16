@@ -1,0 +1,25 @@
+{
+    "name": "cartismo/bank-transfer-payment",
+    "description": "Bank transfer payment module for Cartismo",
+    "type": "cartismo-module",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Cartismo",
+            "email": "support@cartismo.com"
+        }
+    ],
+    "require": {},
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\BankTransferPayment\\Providers\\BankTransferPaymentServiceProvider"
+            ]
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\BankTransferPayment\\": ""
+        }
+    }
+}
