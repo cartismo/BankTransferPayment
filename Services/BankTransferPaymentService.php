@@ -2,139 +2,61 @@
 
 namespace Modules\BankTransferPayment\Services;
 
-use App\Models\InstalledModule;
+use App\Contracts\AbstractPaymentMethod;
 
-class BankTransferPaymentService
+class BankTransferPaymentService extends AbstractPaymentMethod
 {
-    protected ?array $settings = null;
-
     /**
-     * Get module settings
+     * Get icon identifier for this payment method
      */
-    public function getSettings(): array
+    public function getIcon(): string
     {
-        if ($this->settings === null) {
-            $module = InstalledModule::where('slug', 'bank-transfer-payment')->first();
-
-            $defaultSettings = [
-                'enabled' => true,
-                'title' => 'Bank Transfer',
-                'description' => 'Pay via bank transfer. You will receive bank account details after placing your order.',
-                'instructions' => 'Please make the payment to the following bank account and include your order number as reference.',
-                'bank_name' => '',
-                'account_holder' => '',
-                'iban' => '',
-                'bic' => '',
-                'additional_info' => '',
-                'order_status' => 'pending',
-                'sort_order' => 0,
-            ];
-
-            $this->settings = array_replace_recursive($defaultSettings, $module?->settings ?? []);
-        }
-
-        return $this->settings;
+        return $this->settings['icon'] ?? 'building-library';
     }
 
     /**
-     * Check if module is enabled
+     * Get payment type: always offline for bank transfer
      */
-    public function isEnabled(): bool
+    public function getType(): string
     {
-        return $this->getSettings()['enabled'] ?? false;
+        return self::TYPE_OFFLINE;
     }
 
     /**
-     * Get payment method title
-     */
-    public function getTitle(): string
-    {
-        return $this->getSettings()['title'] ?? 'Bank Transfer';
-    }
-
-    /**
-     * Get payment method description
-     */
-    public function getDescription(): string
-    {
-        return $this->getSettings()['description'] ?? '';
-    }
-
-    /**
-     * Get payment instructions
-     */
-    public function getInstructions(): string
-    {
-        return $this->getSettings()['instructions'] ?? '';
-    }
-
-    /**
-     * Get bank details
-     */
-    public function getBankDetails(): array
-    {
-        $settings = $this->getSettings();
-
-        return [
-            'bank_name' => $settings['bank_name'] ?? '',
-            'account_holder' => $settings['account_holder'] ?? '',
-            'iban' => $settings['iban'] ?? '',
-            'bic' => $settings['bic'] ?? '',
-            'additional_info' => $settings['additional_info'] ?? '',
-        ];
-    }
-
-    /**
-     * Get payment method data for checkout
-     */
-    public function getPaymentMethod(): ?array
-    {
-        if (!$this->isEnabled()) {
-            return null;
-        }
-
-        return [
-            'id' => 'bank-transfer-payment',
-            'title' => $this->getTitle(),
-            'description' => $this->getDescription(),
-            'instructions' => $this->getInstructions(),
-            'bank_details' => $this->getBankDetails(),
-            'type' => 'offline',
-        ];
-    }
-
-    /**
-     * Get order status after placing order with this payment method
+     * Get default order status for bank transfer orders (pending until confirmed)
      */
     public function getOrderStatus(): string
     {
-        return $this->getSettings()['order_status'] ?? 'pending';
+        return $this->settings['order_status'] ?? 'pending';
     }
 
     /**
-     * Format bank details for display
+     * Get bank details from settings
      */
-    public function getFormattedBankDetails(): string
+    public function getBankDetails(): array
     {
-        $details = $this->getBankDetails();
-        $lines = [];
+        return [
+            'bank_name' => $this->settings['bank_name'] ?? '',
+            'account_holder' => $this->settings['account_holder'] ?? '',
+            'iban' => $this->settings['iban'] ?? '',
+            'bic' => $this->settings['bic'] ?? '',
+            'additional_info' => $this->settings['additional_info'] ?? '',
+        ];
+    }
 
-        if (!empty($details['bank_name'])) {
-            $lines[] = "Bank: {$details['bank_name']}";
-        }
-        if (!empty($details['account_holder'])) {
-            $lines[] = "Account Holder: {$details['account_holder']}";
-        }
-        if (!empty($details['iban'])) {
-            $lines[] = "IBAN: {$details['iban']}";
-        }
-        if (!empty($details['bic'])) {
-            $lines[] = "BIC/SWIFT: {$details['bic']}";
-        }
-        if (!empty($details['additional_info'])) {
-            $lines[] = $details['additional_info'];
+    /**
+     * Override getPaymentMethod to include bank_details
+     */
+    public function getPaymentMethod(float $orderTotal = 0): ?array
+    {
+        $base = parent::getPaymentMethod($orderTotal);
+
+        if ($base === null) {
+            return null;
         }
 
-        return implode("\n", $lines);
+        $base['bank_details'] = $this->getBankDetails();
+
+        return $base;
     }
 }
