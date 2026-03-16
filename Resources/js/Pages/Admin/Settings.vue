@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
-оimport { Link, router, usePage } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import StoreSettingsTabs from '@/Components/Admin/StoreSettingsTabs.vue';
 import { useConfirmDialog } from '@/Composables/useConfirmDialog.js';
@@ -23,6 +23,7 @@ const props = defineProps({
     stores: Array,
     storeSettings: Object,
     defaultSettings: Object,
+    translations: Object,
 });
 
 const page = usePage();
@@ -30,18 +31,12 @@ const { confirm } = useConfirmDialog();
 const storeTabsRef = ref(null);
 const saving = ref(false);
 
-const t = (key) => {
-    const translations = page.props.translations?.admin?.payment?.['bank-transfer']?.settings ?? {};
-    const keys = key.split('.');
-    let value = translations;
-    for (const k of keys) {
-        if (value && typeof value === 'object' && k in value) {
-            value = value[k];
-        } else {
-            return key;
-        }
-    }
-    return typeof value === 'string' ? value : key;
+const t = (key, replacements = {}) => {
+    let text = props.translations?.[key] || key;
+    Object.entries(replacements).forEach(([k, v]) => {
+        text = text.replace(`:${k}`, v);
+    });
+    return text;
 };
 
 const submit = () => {
@@ -183,7 +178,7 @@ const bankDetailsComplete = computed(() => {
                                     </div>
                                     <div>
                                         <h3 class="font-semibold text-gray-900">{{ t('enable_title') }}</h3>
-                                        <p class="text-sm text-gray-500">{{ t('enable_description').replace(':store', store?.name || '') }}</p>
+                                        <p class="text-sm text-gray-500">{{ t('enable_description', { store: store?.name || '' }) }}</p>
                                     </div>
                                 </div>
                                 <button type="button" @click="updateSetting('enabled', !settings.enabled)" :class="settings.enabled ? 'bg-green-500' : 'bg-gray-300'" class="relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">

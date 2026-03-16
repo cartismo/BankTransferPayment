@@ -37,7 +37,10 @@ class SettingsController extends Controller
 
     public function index(): Response
     {
-        return Inertia::render('BankTransferPayment::Admin/Settings', $this->getMultiStoreData());
+        $data = $this->getMultiStoreData();
+        $data['translations'] = __('banktransferpayment::settings');
+
+        return Inertia::render('BankTransferPayment::Admin/Settings', $data);
     }
 
     public function update(Request $request): RedirectResponse
