@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Modules\BankTransferPayment\Services\BankTransferPaymentService;
 
 class SettingsController extends Controller
 {
@@ -20,19 +21,7 @@ class SettingsController extends Controller
 
     protected function getDefaultSettings(): array
     {
-        return [
-            'enabled' => true,
-            'title' => 'Bank Transfer',
-            'description' => 'Pay via bank transfer. You will receive bank account details after placing your order.',
-            'instructions' => 'Please make the payment to the following bank account and include your order number as reference.',
-            'bank_name' => '',
-            'account_holder' => '',
-            'iban' => '',
-            'bic' => '',
-            'additional_info' => '',
-            'order_status' => 'pending',
-            'sort_order' => 0,
-        ];
+        return BankTransferPaymentService::defaultSettings();
     }
 
     public function index(): Response
